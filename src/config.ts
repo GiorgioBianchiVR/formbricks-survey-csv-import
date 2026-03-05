@@ -6,6 +6,7 @@ export interface AppConfig {
     environmentId: string;
     csvSeparator: string;
     optionsSeparator: string;
+    csvPath: string;
 }
 
 export class Survey {
@@ -23,14 +24,16 @@ export class Question {
     public placeholder?: DefaultText = new DefaultText();
     public inputType: InputType = InputType.TEXT;
     public rating?: RatingRange;
-    public shuffleOptions: ShuffleOptions = ShuffleOptions.NONE;
+    public shuffleOption: ShuffleOptions = ShuffleOptions.NONE;
     public required: boolean = true;
     public type : QuestionType = QuestionType.OPEN_TEXT;
     public choices?: Choice[];
+    public rows?: Choice[];
+    public columns?: Choice[];
 }
 
 export class Choice {
-    public id: string;
+    public id: string = 'default_id';
     public label: DefaultText = new DefaultText();
 }
 
@@ -40,7 +43,7 @@ export class DefaultText {
 
 export class WelcomeCard {
     enabled: boolean= true;
-    fileUrl: string = '';
+    fileUrl?: string;
     headline: DefaultText = new DefaultText();
     html: DefaultText = new DefaultText();
     showResponseCount: boolean = false;
