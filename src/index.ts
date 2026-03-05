@@ -4,8 +4,10 @@ import fs from "fs";
 import path from "path";
 import { parse } from "csv-parse";
 import axios from "axios";
-import { loadConfig, AppConfig, SurveyStatus, Survey, Question, InputType, QuestionType, Choice, SurveyType, DefaultText, WelcomeCard } from "./config";
+import { loadConfig, AppConfig} from "./config";
+import { Choice, Question, Survey, WelcomeCard } from "./classes/classes";
 import 'dotenv/config';
+import { QuestionType, SurveyStatus, SurveyType } from "./enums/enums";
 
 async function main() {
     const config: AppConfig = loadConfig();
@@ -154,6 +156,6 @@ async function main() {
 
 // execute
 main().catch((e) => {
-  console.error("Unhandled error:", e);
-  process.exit(1);
+    console.error("Unhandled error:", e);
+    process.exit(1);
 });
