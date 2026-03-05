@@ -3,5 +3,13 @@
     "environmentId": "cmmaeghmtk0x9s101znnds8l7",
     "csvSeparator": ";",
     "optionsSeparator": "|",
-    "csvPath": "./src/assets/csvs/survey.csv"
+    "csvPath": "./src/assets/csvs/survey.csv",
+    "csvSchema": {
+        "idColumnName": "q_id",
+        "sectionColumnName": "Sezione",
+        "headlineColumnName": "Testo_Migliorato",
+        "typeColumnName": "Tipo_Domanda",
+        "optionsColumnName": "Opzioni_Risposta",
+        "requiredColumnName": "Obbligatoria"
+    }
 }

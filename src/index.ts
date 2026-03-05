@@ -3,24 +3,41 @@
 import fs from "fs";
 import path from "path";
 import { parse } from "csv-parse";
-import axios from "axios";
 import { loadConfig, AppConfig} from "./config";
 import { Choice, Question, Survey, WelcomeCard } from "./classes/classes";
 import 'dotenv/config';
 import { QuestionType, SurveyStatus, SurveyType } from "./enums/enums";
+import { createSurvey } from "./api-client";
 
-async function main() {
-    const config: AppConfig = loadConfig();
-    const csvPath = path.resolve(config.csvPath);
-    if (!csvPath) {
-        console.error("CSV path is not set");
-        process.exit(1);
+export function validateApiKey(): void {
+    const apiKey = process.env.FORMBRICKS_API_KEY;
+    if (!apiKey || apiKey.trim() === '') {
+        throw new Error('API key is missing or empty in .env file');
     }
+}
 
+export function validateCsvPath(csvPath: string): void {
+    if (!csvPath || csvPath.trim() === '') {
+        throw new Error('CSV path is required');
+    }
     if (!fs.existsSync(csvPath)) {
-        console.error(`CSV file not found: ${csvPath}`);
-        process.exit(1);
+        throw new Error(`CSV file not found: ${csvPath}`);
     }
+}
+
+export function validateEnvironmentId(config: AppConfig): void {
+    if (!config.environmentId || config.environmentId.trim() === '') {
+        throw new Error('Environment ID is missing or empty in config.json');
+    }
+}
+
+export async function main() {
+    const config: AppConfig = loadConfig();
+    validateEnvironmentId(config);
+    validateApiKey();
+    validateCsvPath(config.csvPath);
+    
+    const csvPath = path.resolve(config.csvPath);
 
     // read file
     const csvData = fs.readFileSync(csvPath, "utf-8");
@@ -44,23 +61,23 @@ async function main() {
         const payload = records;
         let newSurvey = new Survey();
         newSurvey.environmentId = config.environmentId;
-        newSurvey.name = "Survey from CSV Import";
+        newSurvey.name = "Survey from CSV Import" + new Date().toISOString();
         newSurvey.status = SurveyStatus.DRAFT;
         newSurvey.questions = [];
         newSurvey.type = SurveyType.LINK;
-        // Check if the first row is a welcome card based on 'Sezione' field
-        if(payload[0].Sezione == 'Presentazione') {
+        // Check if the first row is a welcome card based on section field
+        if(payload[0][config.csvSchema.sectionColumnName] == 'Presentazione') {
             newSurvey.welcomeCard = new WelcomeCard();
             newSurvey.welcomeCard.enabled = true;
-            newSurvey.welcomeCard.headline.default = payload[0].Testo_Migliorato || 'Welcome to the survey!';
+            newSurvey.welcomeCard.headline.default = payload[0][config.csvSchema.headlineColumnName] || 'Welcome to the survey!';
             payload.shift();
         }
         payload.forEach((parsedQuestion, index) => {
             let question: Question = new Question();
-            question.id = parsedQuestion.q_id;
+            question.id = parsedQuestion[config.csvSchema.idColumnName];
 
             // Determine question type based on 'Tipo_Domanda' field
-            switch (parsedQuestion.Tipo_Domanda) {
+            switch (parsedQuestion[config.csvSchema.typeColumnName]) {
                 case 'Scelta singola':
                     question.type = QuestionType.MULTIPLE_CHOICE_SINGLE;
                     break;
@@ -86,13 +103,13 @@ async function main() {
                     question.type = QuestionType.OPEN_TEXT;
                     break;
             }
-            question.headline.default = parsedQuestion.Testo_Migliorato;
+            question.headline.default = parsedQuestion[config.csvSchema.headlineColumnName];
 
             // For multiple choice questions, split options and create Choice objects
-            if(question.type == QuestionType.MULTIPLE_CHOICE_MULTI 
+            if(question.type == QuestionType.MULTIPLE_CHOICE_MULTI
                 || question.type == QuestionType.MULTIPLE_CHOICE_SINGLE
                 || question.type == QuestionType.RANKING) {
-                let choices : string[] = parsedQuestion.Opzioni_Risposta ? parsedQuestion.Opzioni_Risposta.split(config.optionsSeparator) : [];
+                let choices : string[] = parsedQuestion[config.csvSchema.optionsColumnName] ? parsedQuestion[config.csvSchema.optionsColumnName].split(config.optionsSeparator) : [];
                 question.choices = [];
 
                 choices.forEach((choice, idx) => {
@@ -123,7 +140,7 @@ async function main() {
                     question.columns.push(column);
                 }
 
-                let rows : string[] = parsedQuestion.Opzioni_Risposta ? parsedQuestion.Opzioni_Risposta.split(config.optionsSeparator) : [];
+                let rows : string[] = parsedQuestion[config.csvSchema.optionsColumnName] ? parsedQuestion[config.csvSchema.optionsColumnName].split(config.optionsSeparator) : [];
                 rows.forEach((row, idx) => {
                     let newRow = new Choice();
                     newRow.id = `${question.id}_${idx}`;
@@ -136,26 +153,16 @@ async function main() {
             newSurvey.questions.push(question);
         });
 
-        try {
-            const url = `${config.baseUrl}api/v1/management/surveys`;
-            const response = await axios.post(url, newSurvey, {
-                headers: {
-                "Content-Type": "application/json",
-                "x-api-key": process.env.FORMBRICKS_API_KEY,
-                },
-            });
-            console.log("API response status:", response.status);
-            console.log("Response data:", response.data);
-        } catch (postErr) {
-            console.error("Error posting to API:", postErr);
-            process.exit(1);
-        }
+        await createSurvey(config, newSurvey);
     },
     );
 }
 
 // execute
-main().catch((e) => {
-    console.error("Unhandled error:", e);
-    process.exit(1);
-});
+if(process.env.NODE_ENV !== 'test') {
+    main().catch((e) => {
+        console.error("Unhandled error:", e);
+        process.exit(1);
+    });
+}
+

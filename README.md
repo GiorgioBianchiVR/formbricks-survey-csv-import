@@ -31,12 +31,14 @@ This tool parses a CSV file containing form data and uses the FormBricks API to 
      "baseUrl": "https://app.formbricks.com/",
      "environmentId": "your_environment_id_here",
      "csvSeparator": ";",
-     "optionsSeparator": "|"
+     "optionsSeparator": "|",
+     "csvPath": "path/to/your/survey.csv"
    }
    ```
    - `environmentId`: Your FormBricks environment ID where the survey will be created.
    - `csvSeparator`: The character used to separate columns in your CSV file (e.g., ";" or ",").
    - `optionsSeparator`: The character used to separate multiple options within a cell (e.g., "|" for multiple choice options).
+   - `csvPath`: The path to your CSV file containing the survey form data.
 
 4. **Build the Project**:
    ```bash
@@ -45,16 +47,16 @@ This tool parses a CSV file containing form data and uses the FormBricks API to 
 
 ## Usage
 
-Run the CLI tool with the path to your CSV file:
+Run the CLI tool:
 
 ```bash
-npm run start -- path/to/your/survey.csv
+npm run start
 ```
 
 For development (without building):
 
 ```bash
-npm run dev -- path/to/your/survey.csv
+npm run dev
 ```
 
 ## CSV Format

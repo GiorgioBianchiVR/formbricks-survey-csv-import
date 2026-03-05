@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { ColumnNames } from './classes/classes';
 
 export interface AppConfig {
     baseUrl: string;
@@ -7,6 +8,7 @@ export interface AppConfig {
     csvSeparator: string;
     optionsSeparator: string;
     csvPath: string;
+    csvSchema: ColumnNames;
 }
 
 export function loadConfig(configPath: string = 'config.json'): AppConfig {

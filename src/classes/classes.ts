@@ -45,3 +45,12 @@ export class Rating {
     public ratingRange: RatingRange = RatingRange.FIVE;
     public ratingScale: RatingScale = RatingScale.NUMBER;
 }
+
+export class ColumnNames {
+    public idColumnName: string = 'q_id';
+    public sectionColumnName: string = 'Sezione';
+    public headlineColumnName: string = 'Testo_Migliorato';
+    public typeColumnName: string = 'Tipo_Domanda';
+    public optionsColumnName: string = 'Opzioni_Risposta';
+    public requiredColumnName: string = 'Obbligatoria';
+}
