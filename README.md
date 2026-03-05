@@ -1,52 +1,72 @@
-# CSV to JSON CLI
+# FormBricks Survey CSV Import CLI
 
-A simple Node.js CLI application written in TypeScript that parses a CSV file and sends the resulting JSON to an external API.
+A Node.js CLI application that imports survey forms from a CSV file and creates surveys on FormBricks using their external APIs.
 
-## Features
+## Description
 
-- Configurable via `config.json`
-- CSV parsing with `csv-parse`
-- HTTP POST using `axios`
-- CLI usage, no GUI
+This tool parses a CSV file containing form data and uses the FormBricks API to automatically build and deploy surveys. The CSV represents the survey form structure, with questions and options defined in the file.
+
+## Prerequisites
+
+- Node.js (version 14 or higher) installed on your system.
 
 ## Setup
 
-1. Install dependencies:
+1. **Install Dependencies**:
    ```bash
    npm install
    ```
-2. Update `config.json` with your API key, base URL, environment ID and separators.
-3. Build the project:
+
+2. **Create Environment File**:
+   Create a `.env` file in the root directory and add your FormBricks API key:
+   ```
+   API_KEY=your_formbricks_api_key_here
+   ```
+   You can obtain your API key from your FormBricks account settings.
+
+3. **Configure config.json**:
+   Update the `config.json` file with your FormBricks environment ID and CSV parsing options:
+   ```json
+   {
+     "baseUrl": "https://app.formbricks.com/",
+     "environmentId": "your_environment_id_here",
+     "csvSeparator": ";",
+     "optionsSeparator": "|"
+   }
+   ```
+   - `environmentId`: Your FormBricks environment ID where the survey will be created.
+   - `csvSeparator`: The character used to separate columns in your CSV file (e.g., ";" or ",").
+   - `optionsSeparator`: The character used to separate multiple options within a cell (e.g., "|" for multiple choice options).
+
+4. **Build the Project**:
    ```bash
    npm run build
    ```
 
 ## Usage
 
-```bash
-npm run start -- path/to/file.csv
-```
-
-For development without building, use:
+Run the CLI tool with the path to your CSV file:
 
 ```bash
-npm run dev -- path/to/file.csv
+npm run start -- path/to/your/survey.csv
 ```
 
-The parsing logic is left for you to implement in `src/index.ts`.
+For development (without building):
 
-## Configuration
-
-`config.json` should contain:
-
-```json
-{
-  "apiKey": "YOUR_API_KEY_HERE",
-  "baseUrl": "https://api.example.com",
-  "environmentId": "your-environment-id",
-  "csvSeparator": ",",
-  "optionsSeparator": "|"
-}
+```bash
+npm run dev -- path/to/your/survey.csv
 ```
 
-Sensitive values (like `apiKey`) should be kept secret and managed securely (e.g., via environment variables or a secrets manager).
+## CSV Format
+
+The CSV file should contain your survey form data. Ensure the separators match those configured in `config.json`.
+
+## Configuration Details
+
+- **API Key**: Stored securely in `.env` file to avoid exposing sensitive information.
+- **Environment ID**: Specifies the FormBricks environment for survey creation.
+- **Separators**: Customize parsing based on your CSV structure.
+
+## License
+
+ISC
